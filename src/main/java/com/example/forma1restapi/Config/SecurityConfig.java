@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,6 +21,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/pilots/pilots", "/api/gp/allgp", "/api/users/users").permitAll()
                         .requestMatchers("/api/users/login", "/api/users/signup").permitAll()
                         .requestMatchers("/api/results/results").hasAnyRole("ADMIN", "MODERATOR")
+                        .requestMatchers(HttpMethod.POST, "/api/messages/messages").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/api/messages/messages").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
 
