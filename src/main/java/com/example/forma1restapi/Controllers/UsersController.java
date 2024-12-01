@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,7 +55,9 @@ public class UsersController {
         }
 
         String token = jwtUtil.generateToken(user.getFelhasznalonev(), user.getRole());
-        return ResponseEntity.ok(Map.of("token", token));
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
