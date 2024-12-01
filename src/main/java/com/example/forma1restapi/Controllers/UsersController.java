@@ -6,6 +6,7 @@ import com.example.forma1restapi.Services.JwtBlacklist;
 import com.example.forma1restapi.Services.JwtUtil;
 import com.example.forma1restapi.Services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -40,11 +41,15 @@ public class UsersController {
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody User user){
         if(userService.findByUsername(user.getFelhasznalonev()) != null){
-            return ResponseEntity.badRequest().body("User already exists.");
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT) // 409 Conflict
+                    .body(Map.of("message", "User already exists."));
         }
 
         userService.registerUser(user);
-        return ResponseEntity.ok("User registered successfully.");
+        return ResponseEntity
+                .status(HttpStatus.CREATED) // 201 Created
+                .body(Map.of("message", "User registered successfully."));
     }
 
     @PostMapping("/login")
