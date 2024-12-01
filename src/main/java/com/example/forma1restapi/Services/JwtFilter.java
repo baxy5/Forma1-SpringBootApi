@@ -21,11 +21,13 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final JwtBlacklist jwtBlacklist;
 
     @Lazy
-    public JwtFilter(JwtUtil jwtUtil, UserService userService){
+    public JwtFilter(JwtUtil jwtUtil, UserService userService, JwtBlacklist jwtBlacklist){
         this.jwtUtil = jwtUtil;
         this.userService = userService;
+        this.jwtBlacklist = jwtBlacklist;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        if(path.equals("/api/users/login") || path.equals("/api/users/signup")){
+        if(path.equals("/api/users/login") || path.equals("/api/users/signup") || path.equals("/api/users/logout")){
             chain.doFilter(request,response);
             return;
         }
@@ -41,6 +43,13 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
+
+            // Check if the token is blacklisted for logout functionalities
+            if (jwtBlacklist.isTokenBlacklisted(token)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
+
             if (jwtUtil.validateToken(token)) {
                 String username = jwtUtil.extractUsername(token);
                 User user = userService.findByUsername(username);

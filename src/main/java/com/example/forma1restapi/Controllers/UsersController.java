@@ -2,8 +2,10 @@ package com.example.forma1restapi.Controllers;
 
 import com.example.forma1restapi.Models.User;
 import com.example.forma1restapi.Repositories.UsersRepository;
+import com.example.forma1restapi.Services.JwtBlacklist;
 import com.example.forma1restapi.Services.JwtUtil;
 import com.example.forma1restapi.Services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,8 @@ public class UsersController {
     private AuthenticationManagerBuilder authenticationManagerBuilder;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private JwtBlacklist jwtBlacklist;
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody User user){
@@ -51,6 +55,17 @@ public class UsersController {
 
         String token = jwtUtil.generateToken(user.getFelhasznalonev(), user.getRole());
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            jwtBlacklist.blacklistToken(token);
+            return ResponseEntity.ok("Logged out successfully.");
+        }
+        return ResponseEntity.badRequest().body("No token provided.");
     }
 
     @GetMapping("/users")
